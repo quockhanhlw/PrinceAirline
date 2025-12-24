@@ -179,14 +179,6 @@ If you find a bug or have a feature request, please open an Issue with:
 
 ---
 
-## License
-
-MIT License. See [LICENSE](LICENSE).
-
-> If you don’t have a `LICENSE` file yet, either add one (recommended) or update this section.
-
----
-
 ## Contact & Authors
 
 - Author: Quoc Khanh
