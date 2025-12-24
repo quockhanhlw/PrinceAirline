@@ -1,95 +1,95 @@
-# PrinceAirline (Spring Boot + React)
+# PrinceAirline — Full‑Stack Airline Booking (Spring Boot + React)
 
-This repo contains:
+[![Java](https://img.shields.io/badge/Java-21-informational)](#)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0--SNAPSHOT-brightgreen)](#)
+[![React](https://img.shields.io/badge/React-CRA-blue)](#)
+[![MySQL](https://img.shields.io/badge/MySQL-8.x-blue)](#)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey)](#license)
 
-- `airline-backend/` – Spring Boot (Java) REST API + Security + JPA (MySQL)
+PrinceAirline is a full‑stack airline booking web application. It provides REST APIs (Spring Boot) and a React UI for flight search, booking, and admin management.
+
+This repository contains:
+
+- `airline-backend/` – Spring Boot REST API + Security + JPA (MySQL)
 - `airline-frontend/` – React app (Create React App)
 
-Default ports (from config):
+Default ports:
 
 - Backend API: `http://localhost:8082`
 - Frontend UI: `http://localhost:3000`
 
 ---
 
-## Prerequisites (Windows)
+## Table of Contents
 
-### 1) Install Java 21
+- [Installation](#installation)
+- [Usage](#usage)
+- [Demo](#demo)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact & Authors](#contact--authors)
 
-Backend is configured with Java **21** (`<java.version>21</java.version>` in `airline-backend/pom.xml`).
+---
 
-- Install JDK 21 (Temurin/Adoptium recommended)
-- Ensure `JAVA_HOME` points to the JDK folder and `java -version` returns 21
+## Installation
 
-### 2) Install MySQL 8.x
+### Prerequisites
 
-Backend is configured to use:
+- Java **21** (backend uses `<java.version>21</java.version>`)
+- MySQL **8.x**
+- Node.js (LTS recommended) + npm
 
-- Database: `flightdb`
+Optional (recommended): MySQL Workbench
+
+### Database setup (MySQL)
+
+The backend is configured to use:
+
+- Database name: `flightdb`
 - Host: `localhost:3306`
 
-See `airline-backend/src/main/resources/application.properties`.
+You can initialize the schema and seed data using the provided SQL scripts:
 
-### 3) Install Node.js
+1. `airline-backend/mysql-workbench-init.sql` (tables + base seed)
+2. `airline-backend/mysql-seed-airports-10countries.sql` (airports)
+3. (Optional) your flights seed script
 
-Frontend uses React + `react-scripts`.
+After importing, you should see tables like `roles`, `users`, `users_roles`, `airports`, `flights`, `bookings`.
 
-- Recommended: Node.js LTS
-- Verify `node -v` and `npm -v`
+### Backend configuration (secrets)
 
----
+The backend reads secrets from environment variables (see `airline-backend/src/main/resources/application.properties`):
 
-## Database setup (MySQL Workbench)
+- `DB_PASSWORD`
+- `JWT_SECRET`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
 
-### Option A (recommended): Use the SQL scripts in `airline-backend/`
+Set them in PowerShell (current terminal session):
 
-The project already includes SQL scripts you can import/run:
-
-- `airline-backend/mysql-workbench-init.sql` – create tables + base seed (roles, constraints, etc.)
-- `airline-backend/mysql-seed-airports-10countries.sql` – seed airports (IATA codes)
-
-Typical order:
-
-1. Run `mysql-workbench-init.sql`
-2. Run `mysql-seed-airports-10countries.sql`
-3. Run your flights seed SQL (the script you generated in the chat)
-
-### Quick sanity checks
-
-After importing, the schema should include tables like:
-
-- `roles`, `users`, `users_roles`
-- `airports`, `flights`, `bookings`, `passengers`, `email_notifications`
+```powershell
+$env:DB_PASSWORD = "<your-mysql-password>"
+$env:JWT_SECRET = "<a-long-random-secret>"
+$env:MAIL_USERNAME = "<gmail-address>"   # optional
+$env:MAIL_PASSWORD = "<gmail-app-password>" # optional
+```
 
 ---
 
-## Run the backend (Spring Boot)
+## Usage
 
-From repo root:
+### Run backend (Spring Boot)
 
 ```powershell
 cd F:\PrinceAirline\airline-backend
-.mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
-Backend reads configuration from:
+API base URL: `http://localhost:8082`
 
-- `airline-backend/src/main/resources/application.properties`
-
-When it starts successfully, API base URL:
-
-- `http://localhost:8082`
-
-### Useful endpoints
-
-- Register: `POST /api/auth/register`
-- Login: `POST /api/auth/login`
-
----
-
-## Run the frontend (React)
-
-From repo root:
+### Run frontend (React)
 
 ```powershell
 cd F:\PrinceAirline\airline-frontend
@@ -97,68 +97,98 @@ npm install
 npm start
 ```
 
-Frontend runs at:
+UI URL: `http://localhost:3000`
 
-- `http://localhost:3000`
+### Example API requests
 
-> If the frontend calls the backend, ensure the backend is running on `8082`.
-
----
-
-## Seed accounts (admin / pilot) + roles
-
-The common flow used in this project is:
-
-1) Create user accounts via API (passwords will be BCrypt-hashed by the server)
-
-- `POST http://localhost:8082/api/auth/register`
-
-2) Assign roles in DB (join table `users_roles`)
-
-> Registration assigns `CUSTOMER` role by default when you don’t specify roles.
-
-If you want to remove `CUSTOMER` from an admin user, delete the mapping row in `users_roles`.
-
----
-
-## Configuration & security notes (important)
-
-### 1) Don’t commit secrets
-
-`airline-backend/src/main/resources/application.properties` is configured to read secrets from environment variables (recommended) instead of hard-coding them.
-
-Secrets used by the backend:
-
-- `DB_PASSWORD`
-- `JWT_SECRET`
-- `MAIL_USERNAME`
-- `MAIL_PASSWORD`
-
-If this repo is public, you should rotate/replace any secrets that were previously committed.
-
-### Set secrets in PowerShell (current terminal session)
+Register:
 
 ```powershell
-$env:DB_PASSWORD = "<your-mysql-root-password>"
-$env:JWT_SECRET = "<a-long-random-secret>"
-$env:MAIL_USERNAME = "<gmail-address>"
-$env:MAIL_PASSWORD = "<gmail-app-password>"
+$body = @'
+{
+	"email": "user@example.com",
+	"password": "Password123@",
+	"fullName": "Demo User"
+}
+'@
+
+Invoke-RestMethod -Method Post -Uri "http://localhost:8082/api/auth/register" -ContentType "application/json" -Body $body
 ```
 
-Then start backend (same terminal):
+Login:
 
 ```powershell
-cd F:\PrinceAirline\airline-backend
-.\mvnw.cmd spring-boot:run
+$body = @'
+{
+	"email": "user@example.com",
+	"password": "Password123@"
+}
+'@
+
+Invoke-RestMethod -Method Post -Uri "http://localhost:8082/api/auth/login" -ContentType "application/json" -Body $body
 ```
 
-### 2) Suggested `.gitignore`
-
-Make sure you do not push build artifacts:
-
-- `airline-backend/target/`
-- `airline-frontend/node_modules/`
-- `airline-frontend/build/` (optional; usually not committed)
+> Note: registration assigns `CUSTOMER` role by default. If you create admin/pilot accounts, you can map roles through `users_roles`.
 
 ---
+
+## Demo
+
+Add screenshots/GIFs here (recommended):
+
+- Home / Find Flights page
+- Booking flow
+- Admin dashboard
+
+---
+
+## Features
+
+- User authentication (JWT) and password hashing (BCrypt)
+- Role‑based access control: `ADMIN`, `PILOT`, `CUSTOMER`
+- Airports & flights management
+- Booking flow with passenger information
+- Email templates (Thymeleaf) for welcome / booking ticket (optional mail setup)
+- SQL scripts for schema + seed data (roles, airports, flights)
+
+---
+
+## Tech Stack
+
+- **Backend:** Java 21, Spring Boot, Spring Security, Spring Data JPA (Hibernate), Validation
+- **Frontend:** React (Create React App), React Router, Axios
+- **Database:** MySQL
+- **Build/Tools:** Maven Wrapper, npm, Git/GitHub
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a branch: `feature/<short-name>`
+3. Commit with clear messages
+4. Open a Pull Request describing the change and how to test it
+
+If you find a bug or have a feature request, please open an Issue with:
+
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots/logs if available
+
+---
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
+
+> If you don’t have a `LICENSE` file yet, either add one (recommended) or update this section.
+
+---
+
+## Contact & Authors
+
+- Author: Quoc Khanh
+- GitHub: https://github.com/quockhanhlw
 
