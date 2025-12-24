@@ -29,6 +29,7 @@ Desktop.ini
 # ---------- Local secrets / env ----------
 .env
 .env.*
+**/application.properties
 **/application-local.properties
 **/application-dev.properties
 **/application-prod.properties
